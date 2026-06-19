@@ -79,9 +79,10 @@ jobs:
 
       - name: Show Manifest
         run: |
-          find bin -name "*.manifest" -exec cat {} ;
+          find bin -name "*.manifest" | xargs cat
 
       - name: Upload Firmware
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: NN6000-Firmware
