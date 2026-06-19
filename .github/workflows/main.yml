@@ -8,74 +8,80 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - name: Checkout
+      - name: Checkout Source
         uses: actions/checkout@v4
 
-      - name: Install deps
+      - name: Install Dependencies
         run: |
           sudo apt update
 
           sudo apt install -y build-essential clang flex bison gawk gettext git libncurses5-dev libssl-dev rsync unzip zlib1g-dev file wget python3
 
-      - name: Update feeds
+      - name: Update Feeds
         run: |
           ./scripts/feeds update -a
 
-      - name: Install feeds
+      - name: Install Feeds
         run: |
           ./scripts/feeds install -a
 
-      - name: Check NSS source
-        run: |
-          echo "===== QCA NSS ====="
-
-          find package -type d | grep qca-nss || true
-
-          find package -type f | grep qca-nss || true
-
-
-      - name: Verify feeds
+      - name: Verify Feed Sources
         run: |
           echo "===== EASYTIER ====="
           find feeds -type d | grep easytier || true
 
-          echo "===== DAE ====="
-          find feeds -type d | grep dae || true
+          echo "===== NSS ====="
+          find package feeds -type d | grep qca-nss || true
 
-          echo "===== DAED ====="
-          find feeds -type d | grep daed || true
+      - name: Load Custom Config
+        run: |
+          cp configs/nn6000.config .config
 
-      - name: Load config
+      - name: Verify Config Before Defconfig
         run: |
-          make defconfig
-      - name: Verify package selection
-        run: |
-          grep CONFIG_PACKAGE_dae .config || true
-          grep CONFIG_PACKAGE_daed .config || true
+          echo "===== CUSTOM CONFIG ====="
+
+          grep CONFIG_PACKAGE_luci-app-ddns .config || true
+          grep CONFIG_PACKAGE_luci-app-acme .config || true
+          grep CONFIG_PACKAGE_luci-app-wireguard .config || true
+          grep CONFIG_PACKAGE_luci-app-vlmcsd .config || true
           grep CONFIG_PACKAGE_luci-app-easytier .config || true
 
-      - name: Show NSS config
+      - name: Expand Config
         run: |
-          grep NSS .config || true
+          make defconfig
+
+      - name: Verify Config After Defconfig
+        run: |
+          echo "===== FINAL CONFIG ====="
+
+          grep CONFIG_PACKAGE_luci-app-ddns .config || true
+          grep CONFIG_PACKAGE_luci-app-acme .config || true
+          grep CONFIG_PACKAGE_luci-app-wireguard .config || true
+          grep CONFIG_PACKAGE_luci-app-vlmcsd .config || true
+          grep CONFIG_PACKAGE_luci-app-easytier .config || true
+
+      - name: Dump Selected Packages
+        run: |
+          grep "^CONFIG_PACKAGE_.*=y" .config | sort
+
+      - name: Verify NSS Packages
+        run: |
           grep qca-nss .config || true
 
-      - name: Verify NSS packages
+      - name: Download Sources
         run: |
-          grep -R "KernelPackage/qca-nss" package || true
+          make download -j$(nproc)
 
-          find package -type d | grep qca-nss || true
-
-          find feeds -type d | grep qca-nss || true
-
-      - name: Download sources
-        run: |
-          make download -j8
-
-      - name: Build firmware
+      - name: Build Firmware
         run: |
           make -j$(nproc)
 
-      - name: Upload firmware
+      - name: Show Manifest
+        run: |
+          find bin -name "*.manifest" -exec cat {} ;
+
+      - name: Upload Firmware
         uses: actions/upload-artifact@v4
         with:
           name: NN6000-Firmware
@@ -85,3 +91,4 @@ jobs:
             bin/targets/**/*.ubi
             bin/targets/**/*.manifest
             bin/targets/**/*.buildinfo
+            bin/targets/**/*.json
