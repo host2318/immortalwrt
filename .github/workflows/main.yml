@@ -36,19 +36,6 @@ jobs:
       - name: Load Custom Config
         run: |
           cp configs/nn6000.config .config
-
-      - name: Verify Config Before Defconfig
-        run: |
-          echo "===== CUSTOM CONFIG ====="
-
-          grep CONFIG_PACKAGE_luci-app-ddns .config || true
-          grep CONFIG_PACKAGE_luci-app-acme .config || true
-          grep CONFIG_PACKAGE_luci-app-wireguard .config || true
-          grep CONFIG_PACKAGE_luci-app-vlmcsd .config || true
-          grep CONFIG_PACKAGE_luci-app-easytier .config || true
-
-      - name: Expand Config
-        run: |
           make defconfig
 
       - name: Verify Config After Defconfig
