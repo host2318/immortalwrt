@@ -25,14 +25,6 @@ jobs:
         run: |
           ./scripts/feeds install -a
 
-      - name: Verify Feed Sources
-        run: |
-          echo "===== EASYTIER ====="
-          find feeds -type d | grep easytier || true
-
-          echo "===== NSS ====="
-          find package feeds -type d | grep qca-nss || true
-
       - name: Load Custom Config
         run: |
           cp configs/nn6000.config .config
@@ -48,20 +40,6 @@ jobs:
           grep CONFIG_PACKAGE_luci-app-vlmcsd .config || true
           grep CONFIG_PACKAGE_luci-app-easytier .config || true
 
-      - name: Dump Selected Packages
-        run: |
-          grep "^CONFIG_PACKAGE_.*=y" .config | sort
-
-      - name: Verify NSS Packages
-        run: |
-          grep qca-nss .config || true
-      - name: Verify Passwall2
-        run: |
-          grep CONFIG_PACKAGE_luci-app-passwall2 .config || true
-          grep -R "luci-app-passwall2" feeds/passwall2 || true
-          find feeds -type d | grep passwall2 || true
-          grep CONFIG_PACKAGE_sing-box .config || true
-
       - name: Download Sources
         run: |
           make download -j$(nproc)
@@ -69,10 +47,6 @@ jobs:
       - name: Build Firmware
         run: |
           make -j$(nproc)
-
-      - name: Show Manifest
-        run: |
-          find bin -name "*.manifest" | xargs cat
 
       - name: Upload Firmware
         if: always()
