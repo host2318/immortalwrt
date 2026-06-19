@@ -36,18 +36,23 @@ jobs:
 
       - name: Verify feeds
         run: |
-          echo "===== PASSWALL ====="
-          find feeds -type d | grep passwall || true
-
           echo "===== EASYTIER ====="
           find feeds -type d | grep easytier || true
 
-          echo "===== SINGBOX ====="
-          find feeds -name "*sing*" || true
+          echo "===== DAE ====="
+          find feeds -type d | grep dae || true
+
+          echo "===== DAED ====="
+          find feeds -type d | grep daed || true
 
       - name: Load config
         run: |
           make defconfig
+      - name: Verify package selection
+        run: |
+          grep CONFIG_PACKAGE_dae .config || true
+          grep CONFIG_PACKAGE_daed .config || true
+          grep CONFIG_PACKAGE_luci-app-easytier .config || true
 
       - name: Show NSS config
         run: |
