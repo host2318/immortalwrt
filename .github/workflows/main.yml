@@ -71,6 +71,8 @@ jobs:
       - name: Verify Passwall2
         run: |
           grep CONFIG_PACKAGE_luci-app-passwall2 .config || true
+          grep -R "luci-app-passwall2" feeds/passwall2 || true
+          find feeds -type d | grep passwall2 || true
           grep CONFIG_PACKAGE_sing-box .config || true
 
       - name: Download Sources
